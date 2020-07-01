@@ -22,16 +22,15 @@ Basically parse the needed bank JSON file and apply everything to Tilda products
 
 A pretty complicated way of applying was used. Such things as setTimout should be avoided, but since we're implementing it to a platform which has custom functions and their applying time, I had to do this kind of a dirty hack.  
 
-
-[Link to page](https://javascriptislife.tilda.ws/currency-convert)
+[Link to page](https://javascriptislife.tilda.ws/currency-convert)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-currency-converter.js)
 
 
 ## Taxi form script
 The task was create a form for taxi service. It takes user real location (in case it's allowed). Passes it to certain inputs and calculates the price for a ride based on pre-defined values in JavaScript object. Once location can't be found, you can choose the city from the dropdown and after that pass the exact address to next input (exact address was needed just for the service, didn't take it's part in a calculation). There are also some kind of field validators (button for ordering is not allowed to click before all fields are filled). Used a dirty mix of JavaScript with jQuery actually.  
 
+[Link to page](https://javascriptislife.tilda.ws/taxi-form)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-taxi-form.js)  
-[Link to page](https://javascriptislife.tilda.ws/taxi-form)
 
 
 ## Tilda Tinder (so called)
