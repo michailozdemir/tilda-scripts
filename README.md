@@ -26,7 +26,7 @@ A pretty complicated way of applying was used. Such things as setTimout should b
 ## Taxi form script
 The task was create a form for taxi service. It takes user real location (in case it's allowed). Passes it to certain inputs and calculates the price for a ride based on pre-defined values in JavaScript object. Once location can't be found, you can choose the city from the dropdown and after that pass the exact address to next input (exact address was needed just for the service, didn't take it's part in a calculation). There are also some kind of field validators (button for ordering is not allowed to click before all fields are filled). Used a dirty mix of JavaScript with jQuery actually.
 
-[Link to page](https://michailozdemir.github.io/tilda-taxi-form)
+[Link to page](https://javascriptislife.tilda.ws/taxi-form)
 
 
 ## Tilda Tinder (so called)
