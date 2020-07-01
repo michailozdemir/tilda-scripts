@@ -35,3 +35,9 @@ This kind of customization represent Tinder look to default product cards on Til
 [Link to page](https://javascriptislife.tilda.ws/tilda-tinder)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-tinder.js)
 
+## Pythagoras square (calculator)
+Created a calculator called Pythagoras square, which is used for numerology. It takes digits of your birth date and takes it in different combinations. After that gives you some result with numbers, which you can read about after and know what kind of person are you (whew).
+
+[Link to page](https://javascriptislife.tilda.ws/pythagoras-square)  
+[Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-pythagoras-square.js)
+
