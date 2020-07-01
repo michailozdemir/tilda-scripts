@@ -20,8 +20,10 @@ This kind of script works 100%, since it takes the real Tilda promocode logic.
 Allows to convert prices from desired currency type to another one.
 Basically parse the needed bank JSON file and apply everything to Tilda products.
 
-A pretty complicated way of applying was used. Such things as setTimout should be avoided, but since we're implementing it to a platform which has custom functions and their applying time, I had to do this kind of a dirty hack.
+A pretty complicated way of applying was used. Such things as setTimout should be avoided, but since we're implementing it to a platform which has custom functions and their applying time, I had to do this kind of a dirty hack.  
 
+
+[Link to page](https://javascriptislife.tilda.ws/currency-convert)
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-currency-converter.js)
 
 
