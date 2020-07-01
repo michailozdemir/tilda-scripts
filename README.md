@@ -29,3 +29,10 @@ The task was create a form for taxi service. It takes user real location (in cas
 
 [Link to page](https://michailozdemir.github.io/tilda-taxi-form)
 
+
+## Tilda Tinder (so called)
+This kind of customization represent Tinder look to default product cards on Tilda Publishing platform. The user can like and dislike cards with products (basically travel destinations). Liked cards go to cart, disliked cards just fading out and stay in hidden state. Both cards are stored in Local Storage and once you click 'Сбросить все' it resets the cards back to where they were, clears storage and cart. Also had to customize buttons for product item (make them look similar to like & dislike buttons).
+
+[Link to page](https://javascriptislife.tilda.ws/tilda-tinder)
+[Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-tinder.js)
+
