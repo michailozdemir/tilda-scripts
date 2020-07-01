@@ -3,15 +3,14 @@ Scripts for customization websites based on Tilda Publishing platform
 
 This repository is created for showing scripts as a part of portfolio.
 Most of them will include only JavaScript language part (mostly jQuery framework usage). 
-Doesn't mean I like it, but was easier to do with.
+Doesn't mean I like it, but was easier to do with, since Tilda Publishing supports it.
 
 
 ## Discount script
 This script allows to create a custom discount based on Tilda promocode option. 
 There can be any conditions, like single product amount, multiple product amount, minimal price and etc.
 
-This kind of script works 100%, since it takes the real Tilda promocode logic.
-
+This kind of script works 100%, since it takes the real Tilda promocode logic.  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-discount.js)
 
 
@@ -33,6 +32,6 @@ The task was create a form for taxi service. It takes user real location (in cas
 ## Tilda Tinder (so called)
 This kind of customization represent Tinder look to default product cards on Tilda Publishing platform. The user can like and dislike cards with products (basically travel destinations). Liked cards go to cart, disliked cards just fading out and stay in hidden state. Both cards are stored in Local Storage and once you click 'Сбросить все' it resets the cards back to where they were, clears storage and cart. Also had to customize buttons for product item (make them look similar to like & dislike buttons).
 
-[Link to page](https://javascriptislife.tilda.ws/tilda-tinder)
+[Link to page](https://javascriptislife.tilda.ws/tilda-tinder)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-tinder.js)
 
