@@ -11,6 +11,7 @@ This script allows to create a custom discount based on Tilda promocode option.
 There can be any conditions, like single product amount, multiple product amount, minimal price and etc.
 
 This kind of script works 100%, since it takes the real Tilda promocode logic.
+
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-discount.js)
 
 
@@ -21,4 +22,10 @@ Basically parse the needed bank JSON file and apply everything to Tilda products
 A pretty complicated way of applying was used. Such things as setTimout should be avoided, but since we're implementing it to a platform which has custom functions and their applying time, I had to do this kind of a dirty hack.
 
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-currency-converter.js)
+
+
+## Taxi form script
+The task was create a form for taxi service. It takes user real location (in case it's allowed). Passes it to certain inputs and calculates the price for a ride based on pre-defined values in JavaScript object. Once location can't be found, you can choose the city from the dropdown and after that pass the exact address to next input (exact address was needed just for the service, didn't take it's part in a calculation). There are also some kind of field validators (button for ordering is not allowed to click before all fields are filled). Used a dirty mix of JavaScript with jQuery actually.
+
+[Link to page](https://michailozdemir.github.io/tilda-taxi-form)
 
