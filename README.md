@@ -45,3 +45,9 @@ Created a calculator called Pythagoras square, which is used for numerology. It 
 [Link to page](https://javascriptislife.tilda.ws/pythagoras-square)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-pythagoras-square.js)
 
+## Google Reviews (fetching and pasting into Tilda website)
+Created a markup, styles and JS logic to fetch data from Google Maps API and get company reviews 
+
+[Link to page](https://javascriptislife.tilda.ws/google-reviews)  
+[Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-google-reviews.html)
+
