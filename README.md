@@ -12,7 +12,7 @@ There can be any conditions, like single product amount, multiple product amount
 
 This kind of script works 100%, since it takes the real Tilda promocode logic.  
 
-[Link to page](https://javascriptislife.tilda.ws/)  
+[Link to page](https://javascriptislife.tilda.ws/discount-script)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-discount.js)
 
 
