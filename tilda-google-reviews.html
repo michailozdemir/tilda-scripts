@@ -1,0 +1,161 @@
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAle5Bdg_coxGze7LAXxPmvNh6GSeOmPwo&libraries=places"></script>
+<script>
+  let map = new google.maps.Map(document.createElement('div'));
+
+  const getReviews = function() {
+    let service = new google.maps.places.PlacesService(map);
+    let options = {
+      placeId: 'ChIJk7MJXhD75okR0O1M3IV2NmI',
+      fields: ['name', 'review']
+    }
+
+    function loadReviewList(place) {
+      let reviewsList = document.querySelector('.review-list');
+      let reviewsData = place.reviews;
+      console.log(place)
+      let sortedReviews = reviewsData.sort((a, b) => a.time - b.time).reverse();
+
+      sortedReviews.forEach((review) => {
+        let reviewEl = document.createElement('div');
+        reviewEl.classList.add('review-item');
+
+        let reviewElInner = `<div class="review-item__header">
+            <img class="review-item__header-image" src="${review.profile_photo_url}" alt="${review.author_name}" />
+            <h3 class="review-item__header-title">${review.author_name}</h3>
+          </div>
+          <div class="review-item__data">
+            <div class="review-item__data-rating" data-rating="${review.rating}">
+              <span class="rating-star"></span>
+              <span class="rating-star"></span>
+              <span class="rating-star"></span>
+              <span class="rating-star"></span>
+              <span class="rating-star"></span>
+            </div>
+            <div class="review-item__data-time">${review.relative_time_description}</div>
+          </div>
+          <p class="review-item__text">${review.text}</p>`;
+        reviewEl.innerHTML = reviewElInner;
+        reviewsList.append(reviewEl);
+      });
+    }
+
+    service.getDetails(options, loadReviewList);
+  }
+
+  getReviews();
+
+</script>
+
+
+<div class="review-list"></ul>
+
+<style>
+    .review-list {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -20px;
+}
+
+@media (max-width: 768px) {
+    .review-list {
+        margin: 0;
+    }
+}
+
+.review-item {
+  max-width: calc(50% - 40px);
+  width: 100%;
+  margin: 0 20px 40px;
+  font-family: 'Roboto', sans-serif;
+}
+
+@media (max-width: 768px) {
+    .review-item {
+        max-width: 100%;
+        margin: 0 0 30px;
+    }
+}
+
+.review-item__header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.review-item__header-image {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.review-item__header-title {
+  width: 100%;
+  font-size: 15px;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-item__text {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.review-item__data {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.review-item__data-rating {
+  display: inline-flex;
+  align-items: center;
+}
+
+.review-item__data-time {
+  margin-left: 5px;
+  font-size: 14px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.rating-star {
+  display: block;
+  position: relative;
+  width: 15px;
+  height: 15px;
+  background: url('https://static.tildacdn.com/tild3364-3566-4263-b261-663162393234/ic_star_rate_empty_1.png') no-repeat 50%;
+  background-size: 15px;
+  margin: 0 1px;
+}
+
+[data-rating="1"] .rating-star:nth-child(-n+1) {
+  background: url('https://static.tildacdn.com/tild3937-3061-4438-b166-656236646637/ic_star_rate_14.png') no-repeat 50%;
+  background-size: 15px;
+}
+
+[data-rating="2"] .rating-star:nth-child(-n+2) {
+  background: url('https://static.tildacdn.com/tild3937-3061-4438-b166-656236646637/ic_star_rate_14.png') no-repeat 50%;
+  background-size: 15px;
+}
+
+[data-rating="3"] .rating-star:nth-child(-n+3) {
+  background: url('https://static.tildacdn.com/tild3937-3061-4438-b166-656236646637/ic_star_rate_14.png') no-repeat 50%;
+  background-size: 15px;
+}
+
+[data-rating="4"] .rating-star:nth-child(-n+4) {
+  background: url('https://static.tildacdn.com/tild3937-3061-4438-b166-656236646637/ic_star_rate_14.png') no-repeat 50%;
+  background-size: 15px;
+}
+
+[data-rating="5"] .rating-star:nth-child(-n+5) {
+  background: url('https://static.tildacdn.com/tild3937-3061-4438-b166-656236646637/ic_star_rate_14.png') no-repeat 50%;
+  background-size: 15px;
+}
+
+</style>
