@@ -1,0 +1,1466 @@
+<!-- Main calculating script -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvP9E7l3vLngGzMmnYSdTyP5jmb0S9kGY&libraries=places,geometry&language=ru-RU"></script>
+
+<style>
+  [data-tooltip-hook="#departure-popup"] .t-popup__container,
+  [data-tooltip-hook="#arrival-popup"] .t-popup__container {
+    border-radius: 10px;
+  }
+
+  .popup-map-container {
+    padding: 30px 15px;
+  }
+
+  .js-departure-map-input,
+  .js-arrival-map-input {
+    width: 200px;
+    color: #011d40;
+    border: 1px solid #011d40;
+    background-color: #fff;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    height: 35px;
+    margin-bottom: 30px;
+    font-family: 'Raleway', Arial, sans-serif;
+    padding: 0 20px;
+    line-height: 1.33;
+  }
+
+  .js-departure-map-input:focus,
+  .js-arrival-map-input:focus {
+    -webkit-appearance: none;
+    appearance: none;
+    outline: 0;
+  }
+  
+  .js-departure-map-input {
+        padding-left: 40px;
+        background-image: url('https://static.tildacdn.com/tild3837-3162-4431-a463-386165396339/Airplane_up.svg');
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        background-size: 20px;
+    }
+
+    .js-arrival-map-input {
+        padding-left: 40px;
+        background-image: url('https://static.tildacdn.com/tild6337-3332-4132-b234-643337366465/Airplane_down.svg');
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        background-size: 20px;
+    }
+
+  #map_one,
+  #map_two {
+    height: 500px;
+    border-radius: 10px;
+  }
+  
+  @media (max-width: 640px) {
+      #map_one,
+      #map_two {
+        height: 300px;
+      } 
+  }
+
+  .gmnoprint {
+    display: none;
+  }
+
+  div.pac-container {
+    z-index: 99999999999 !important;
+  }
+
+</style>
+
+<script>
+  $(document).ready(function() {
+    setTimeout(function() {
+      let distance;
+      let hasError;
+      let departureInput = document.querySelector('.custom-form [name="from"]');
+      let arrivalInput = document.querySelector('.custom-form [name="to"]');
+      let planes = [{
+          img: 'https://static.tildacdn.com/tild3131-3732-4230-b662-393338346536/SR22_1.jpg',
+          name: 'Cirrus S22',
+          passengers: 3,
+          speed: 300,
+          hourPrice: 600,
+          minimalPrice: 1200
+        },
+        {
+          img: 'https://static.tildacdn.com/tild6562-3132-4361-a135-623164626462/Vision_Jet_-1.jpg',
+          name: 'Cirrus Vision Jet',
+          passengers: 5,
+          speed: 500,
+          hourPrice: 2500,
+          minimalPrice: 5000
+        }
+      ];
+
+      const locationAutocompleter = function() {
+        let southWest = new google.maps.LatLng(35.809034, -26.020242);
+        let northEast = new google.maps.LatLng(74.413305, 35.325716);
+        let customBounds = new google.maps.LatLngBounds(southWest, northEast);
+        let optionsAirport = {
+            bounds: customBounds,
+            strictBounds: true,
+           types: ['(cities)']
+        };
+
+        new google.maps.places.Autocomplete(departureInput, optionsAirport);
+        new google.maps.places.Autocomplete(arrivalInput, optionsAirport);
+      }
+
+      const getLocationByInput = function(departureValue, arrivalValue) {
+
+        let geocoder = new google.maps.Geocoder();
+        let geocoder2 = new google.maps.Geocoder();
+        let lat1, long1, lat2, long2;
+
+        if (departureInput.value !== '' && arrivalInput.value !== '') {
+          geocoder.geocode({
+            'address': departureValue
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              let latitude = results[0].geometry.location.lat();
+              let longitude = results[0].geometry.location.lng();
+              lat1 = latitude;
+              long1 = longitude;
+            }
+          });
+
+          geocoder2.geocode({
+            'address': arrivalValue
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              let latitude = results[0].geometry.location.lat();
+              let longitude = results[0].geometry.location.lng();
+              lat2 = latitude;
+              long2 = longitude;
+            }
+          });
+
+          setTimeout(function() {
+            getDirection(lat1, long1, lat2, long2, calculatePrice);
+            renderResult();
+          }, 1200);
+
+        }
+      }
+
+      const getDirection = function(lat1, long1, lat2, long2, callback) {
+        let originValue = new google.maps.LatLng(lat1, long1);
+        let destinationValue = new google.maps.LatLng(lat2, long2);
+        distance = google.maps.geometry.spherical.computeDistanceBetween(originValue, destinationValue);
+        distance = distance / 1000;
+
+        if (callback) {
+          callback();
+        }
+      }
+
+      const calculatePrice = function() {
+        for (let plane of planes) {
+            let duration = Math.floor(distance / plane.speed * 60);
+            let minutePrice = plane.hourPrice / 60;
+            console.log(duration)
+            let hours = duration / 60;
+            let formattedHours = Math.floor(hours);
+            let minutes = (hours - formattedHours) * 60;
+            let formattedMinutes = Math.floor(minutes);
+            plane.duration = ('0' + formattedHours).slice(-2) + ':' + ('0' + formattedMinutes).slice(-2);
+            if (duration <= 120) {
+                plane.price = plane.minimalPrice;
+            } else {
+                plane.price = Math.floor(duration * minutePrice);
+            }
+        }
+      }
+
+      const renderResult = function() {
+        let block = $('#rec275708618');
+        let routeInfo = $('[data-info="route"]');
+        let dateInfo = $('[data-info="date"]');
+        let dateInput = $('[name="date"]');
+        let resultList = $('.result__list');
+
+        routeInfo.text(`${departureInput.value} - ${arrivalInput.value}`);
+        if (dateInput.val() == '') {
+            dateInfo.parent().hide();
+        } else {
+            dateInfo.parent().show();
+            dateInfo.text(dateInput.val());
+        }
+
+        if ($('.result__item').length > 0) {
+          $('.result__item').each(function() {
+            $(this).remove();
+          });
+        }
+
+        for (let plane of planes) {
+          let resultItem = `<li class="result__item">
+					<div class="result__item-left">
+						<p class="result__item-title">${plane.name}</p>
+						<p class="result__item-time">Время в пути: <span data-item="time">${plane.duration}</span></p>
+						<p class="result__item-passengers">Пассажиров: <span data-item="passengers">${plane.passengers}</span></p>
+					</div>
+					<div class="result__item-image">
+						<div class="result__item-image-wrapper">
+							<img src="${plane.img}" alt="Plane image" />
+						</div>
+					</div>
+					<div class="result__item-data-mob">
+					    <p class="result__item-time">Время в пути: <span data-item="time">${plane.duration}</span></p>
+						<p class="result__item-passengers">Пассажиров: <span data-item="passengers">${plane.passengers}</span></p>
+					</div>
+					<div class="result__item-right">
+						<p class="result__item-price"><span data-item="price">${plane.price}</span> евро</p>
+						<a class="result__item-btn">Заказать</a>
+					</div>
+				</li>`;
+          resultList.append(resultItem);
+        }
+        
+        block.show();
+      }
+
+      const checkError = function(input) {
+        if (input.val() == '') {
+          input.closest('.t-input-block').find('.t-input-error').show();
+          input.closest('.t-input-block').find('.t-input-error').text('Значение не должно быть пустым');
+          setTimeout(function() {
+            input.closest('.t-input-block').find('.t-input-error').hide();
+          }, 1000);
+          hasError = true;
+        } else {
+          hasError = false;
+        }
+      }
+
+      locationAutocompleter();
+
+      $('[href="#route"]').on('click', function() {
+        checkError($('.custom-form [name="from"]'));
+        checkError($('.custom-form [name="to"]'));
+        if (!hasError) {
+          getLocationByInput(departureInput.value, arrivalInput.value);
+          setTimeout(function() {
+            $('html, body').animate({
+              scrollTop: $('#rec275708618').offset().top
+            }, 2000);
+          }, 1200)
+        }
+      });
+      
+      $('.custom-form [name="date"]').attr('autocomplete', 'off');
+    }, 1100);
+  });
+
+</script>
+<!-- Main calculating script -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvP9E7l3vLngGzMmnYSdTyP5jmb0S9kGY&libraries=places,geometry&language=ru-RU"></script>
+
+<style>
+  [data-tooltip-hook="#departure-popup"] .t-popup__container,
+  [data-tooltip-hook="#arrival-popup"] .t-popup__container {
+    border-radius: 10px;
+  }
+
+  .popup-map-container {
+    padding: 30px 15px;
+  }
+
+  .js-departure-map-input,
+  .js-arrival-map-input {
+    width: 200px;
+    color: #011d40;
+    border: 1px solid #011d40;
+    background-color: #fff;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    height: 35px;
+    margin-bottom: 30px;
+    font-family: 'Raleway', Arial, sans-serif;
+    padding: 0 20px;
+    line-height: 1.33;
+  }
+
+  .js-departure-map-input:focus,
+  .js-arrival-map-input:focus {
+    -webkit-appearance: none;
+    appearance: none;
+    outline: 0;
+  }
+  
+  .js-departure-map-input {
+        padding-left: 40px;
+        background-image: url('https://static.tildacdn.com/tild3837-3162-4431-a463-386165396339/Airplane_up.svg');
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        background-size: 20px;
+    }
+
+    .js-arrival-map-input {
+        padding-left: 40px;
+        background-image: url('https://static.tildacdn.com/tild6337-3332-4132-b234-643337366465/Airplane_down.svg');
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        background-size: 20px;
+    }
+
+  #map_one,
+  #map_two {
+    height: 500px;
+    border-radius: 10px;
+  }
+  
+  @media (max-width: 640px) {
+      #map_one,
+      #map_two {
+        height: 300px;
+      } 
+  }
+
+  .gmnoprint {
+    display: none;
+  }
+
+  div.pac-container {
+    z-index: 99999999999 !important;
+  }
+
+</style>
+
+<script>
+  $(document).ready(function() {
+    setTimeout(function() {
+      let distance;
+      let hasError;
+      let departureInput = document.querySelector('.custom-form [name="from"]');
+      let arrivalInput = document.querySelector('.custom-form [name="to"]');
+      let planes = [{
+          img: 'https://static.tildacdn.com/tild3131-3732-4230-b662-393338346536/SR22_1.jpg',
+          name: 'Cirrus S22',
+          passengers: 3,
+          speed: 300,
+          hourPrice: 600,
+          minimalPrice: 1200
+        },
+        {
+          img: 'https://static.tildacdn.com/tild6562-3132-4361-a135-623164626462/Vision_Jet_-1.jpg',
+          name: 'Cirrus Vision Jet',
+          passengers: 5,
+          speed: 500,
+          hourPrice: 2500,
+          minimalPrice: 5000
+        }
+      ];
+
+      const locationAutocompleter = function() {
+        let southWest = new google.maps.LatLng(35.809034, -26.020242);
+        let northEast = new google.maps.LatLng(74.413305, 35.325716);
+        let customBounds = new google.maps.LatLngBounds(southWest, northEast);
+        let optionsAirport = {
+            bounds: customBounds,
+            strictBounds: true,
+           types: ['(cities)']
+        };
+
+        new google.maps.places.Autocomplete(departureInput, optionsAirport);
+        new google.maps.places.Autocomplete(arrivalInput, optionsAirport);
+      }
+
+      const getLocationByInput = function(departureValue, arrivalValue) {
+
+        let geocoder = new google.maps.Geocoder();
+        let geocoder2 = new google.maps.Geocoder();
+        let lat1, long1, lat2, long2;
+
+        if (departureInput.value !== '' && arrivalInput.value !== '') {
+          geocoder.geocode({
+            'address': departureValue
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              let latitude = results[0].geometry.location.lat();
+              let longitude = results[0].geometry.location.lng();
+              lat1 = latitude;
+              long1 = longitude;
+            }
+          });
+
+          geocoder2.geocode({
+            'address': arrivalValue
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              let latitude = results[0].geometry.location.lat();
+              let longitude = results[0].geometry.location.lng();
+              lat2 = latitude;
+              long2 = longitude;
+            }
+          });
+
+          setTimeout(function() {
+            getDirection(lat1, long1, lat2, long2, calculatePrice);
+            renderResult();
+          }, 1200);
+
+        }
+      }
+
+      const getDirection = function(lat1, long1, lat2, long2, callback) {
+        let originValue = new google.maps.LatLng(lat1, long1);
+        let destinationValue = new google.maps.LatLng(lat2, long2);
+        distance = google.maps.geometry.spherical.computeDistanceBetween(originValue, destinationValue);
+        distance = distance / 1000;
+
+        if (callback) {
+          callback();
+        }
+      }
+
+      const calculatePrice = function() {
+        for (let plane of planes) {
+            let duration = Math.floor(distance / plane.speed * 60);
+            let minutePrice = plane.hourPrice / 60;
+            console.log(duration)
+            let hours = duration / 60;
+            let formattedHours = Math.floor(hours);
+            let minutes = (hours - formattedHours) * 60;
+            let formattedMinutes = Math.floor(minutes);
+            plane.duration = ('0' + formattedHours).slice(-2) + ':' + ('0' + formattedMinutes).slice(-2);
+            if (duration <= 120) {
+                plane.price = plane.minimalPrice;
+            } else {
+                plane.price = Math.floor(duration * minutePrice);
+            }
+        }
+      }
+
+      const renderResult = function() {
+        let block = $('#rec275708618');
+        let routeInfo = $('[data-info="route"]');
+        let dateInfo = $('[data-info="date"]');
+        let dateInput = $('[name="date"]');
+        let resultList = $('.result__list');
+
+        routeInfo.text(`${departureInput.value} - ${arrivalInput.value}`);
+        if (dateInput.val() == '') {
+            dateInfo.parent().hide();
+        } else {
+            dateInfo.parent().show();
+            dateInfo.text(dateInput.val());
+        }
+
+        if ($('.result__item').length > 0) {
+          $('.result__item').each(function() {
+            $(this).remove();
+          });
+        }
+
+        for (let plane of planes) {
+          let resultItem = `<li class="result__item">
+					<div class="result__item-left">
+						<p class="result__item-title">${plane.name}</p>
+						<p class="result__item-time">Время в пути: <span data-item="time">${plane.duration}</span></p>
+						<p class="result__item-passengers">Пассажиров: <span data-item="passengers">${plane.passengers}</span></p>
+					</div>
+					<div class="result__item-image">
+						<div class="result__item-image-wrapper">
+							<img src="${plane.img}" alt="Plane image" />
+						</div>
+					</div>
+					<div class="result__item-data-mob">
+					    <p class="result__item-time">Время в пути: <span data-item="time">${plane.duration}</span></p>
+						<p class="result__item-passengers">Пассажиров: <span data-item="passengers">${plane.passengers}</span></p>
+					</div>
+					<div class="result__item-right">
+						<p class="result__item-price"><span data-item="price">${plane.price}</span> евро</p>
+						<a class="result__item-btn">Заказать</a>
+					</div>
+				</li>`;
+          resultList.append(resultItem);
+        }
+        
+        block.show();
+      }
+
+      const checkError = function(input) {
+        if (input.val() == '') {
+          input.closest('.t-input-block').find('.t-input-error').show();
+          input.closest('.t-input-block').find('.t-input-error').text('Значение не должно быть пустым');
+          setTimeout(function() {
+            input.closest('.t-input-block').find('.t-input-error').hide();
+          }, 1000);
+          hasError = true;
+        } else {
+          hasError = false;
+        }
+      }
+
+      locationAutocompleter();
+
+      $('[href="#route"]').on('click', function() {
+        checkError($('.custom-form [name="from"]'));
+        checkError($('.custom-form [name="to"]'));
+        if (!hasError) {
+          getLocationByInput(departureInput.value, arrivalInput.value);
+          setTimeout(function() {
+            $('html, body').animate({
+              scrollTop: $('#rec275708618').offset().top
+            }, 2000);
+          }, 1200)
+        }
+      });
+      
+      $('.custom-form [name="date"]').attr('autocomplete', 'off');
+    }, 1100);
+  });
+
+</script>
+<!-- Main calculating script -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvP9E7l3vLngGzMmnYSdTyP5jmb0S9kGY&libraries=places,geometry&language=ru-RU"></script>
+
+<style>
+  [data-tooltip-hook="#departure-popup"] .t-popup__container,
+  [data-tooltip-hook="#arrival-popup"] .t-popup__container {
+    border-radius: 10px;
+  }
+
+  .popup-map-container {
+    padding: 30px 15px;
+  }
+
+  .js-departure-map-input,
+  .js-arrival-map-input {
+    width: 200px;
+    color: #011d40;
+    border: 1px solid #011d40;
+    background-color: #fff;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    height: 35px;
+    margin-bottom: 30px;
+    font-family: 'Raleway', Arial, sans-serif;
+    padding: 0 20px;
+    line-height: 1.33;
+  }
+
+  .js-departure-map-input:focus,
+  .js-arrival-map-input:focus {
+    -webkit-appearance: none;
+    appearance: none;
+    outline: 0;
+  }
+  
+  .js-departure-map-input {
+        padding-left: 40px;
+        background-image: url('https://static.tildacdn.com/tild3837-3162-4431-a463-386165396339/Airplane_up.svg');
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        background-size: 20px;
+    }
+
+    .js-arrival-map-input {
+        padding-left: 40px;
+        background-image: url('https://static.tildacdn.com/tild6337-3332-4132-b234-643337366465/Airplane_down.svg');
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        background-size: 20px;
+    }
+
+  #map_one,
+  #map_two {
+    height: 500px;
+    border-radius: 10px;
+  }
+  
+  @media (max-width: 640px) {
+      #map_one,
+      #map_two {
+        height: 300px;
+      } 
+  }
+
+  .gmnoprint {
+    display: none;
+  }
+
+  div.pac-container {
+    z-index: 99999999999 !important;
+  }
+
+</style>
+
+<script>
+  $(document).ready(function() {
+    setTimeout(function() {
+      let distance;
+      let hasError;
+      let departureInput = document.querySelector('.custom-form [name="from"]');
+      let arrivalInput = document.querySelector('.custom-form [name="to"]');
+      let planes = [{
+          img: 'https://static.tildacdn.com/tild3131-3732-4230-b662-393338346536/SR22_1.jpg',
+          name: 'Cirrus S22',
+          passengers: 3,
+          speed: 300,
+          hourPrice: 600,
+          minimalPrice: 1200
+        },
+        {
+          img: 'https://static.tildacdn.com/tild6562-3132-4361-a135-623164626462/Vision_Jet_-1.jpg',
+          name: 'Cirrus Vision Jet',
+          passengers: 5,
+          speed: 500,
+          hourPrice: 2500,
+          minimalPrice: 5000
+        }
+      ];
+
+      const locationAutocompleter = function() {
+        let southWest = new google.maps.LatLng(35.809034, -26.020242);
+        let northEast = new google.maps.LatLng(74.413305, 35.325716);
+        let customBounds = new google.maps.LatLngBounds(southWest, northEast);
+        let optionsAirport = {
+            bounds: customBounds,
+            strictBounds: true,
+           types: ['(cities)']
+        };
+
+        new google.maps.places.Autocomplete(departureInput, optionsAirport);
+        new google.maps.places.Autocomplete(arrivalInput, optionsAirport);
+      }
+
+      const getLocationByInput = function(departureValue, arrivalValue) {
+
+        let geocoder = new google.maps.Geocoder();
+        let geocoder2 = new google.maps.Geocoder();
+        let lat1, long1, lat2, long2;
+
+        if (departureInput.value !== '' && arrivalInput.value !== '') {
+          geocoder.geocode({
+            'address': departureValue
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              let latitude = results[0].geometry.location.lat();
+              let longitude = results[0].geometry.location.lng();
+              lat1 = latitude;
+              long1 = longitude;
+            }
+          });
+
+          geocoder2.geocode({
+            'address': arrivalValue
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              let latitude = results[0].geometry.location.lat();
+              let longitude = results[0].geometry.location.lng();
+              lat2 = latitude;
+              long2 = longitude;
+            }
+          });
+
+          setTimeout(function() {
+            getDirection(lat1, long1, lat2, long2, calculatePrice);
+            renderResult();
+          }, 1200);
+
+        }
+      }
+
+      const getDirection = function(lat1, long1, lat2, long2, callback) {
+        let originValue = new google.maps.LatLng(lat1, long1);
+        let destinationValue = new google.maps.LatLng(lat2, long2);
+        distance = google.maps.geometry.spherical.computeDistanceBetween(originValue, destinationValue);
+        distance = distance / 1000;
+
+        if (callback) {
+          callback();
+        }
+      }
+
+      const calculatePrice = function() {
+        for (let plane of planes) {
+            let duration = Math.floor(distance / plane.speed * 60);
+            let minutePrice = plane.hourPrice / 60;
+            console.log(duration)
+            let hours = duration / 60;
+            let formattedHours = Math.floor(hours);
+            let minutes = (hours - formattedHours) * 60;
+            let formattedMinutes = Math.floor(minutes);
+            plane.duration = ('0' + formattedHours).slice(-2) + ':' + ('0' + formattedMinutes).slice(-2);
+            if (duration <= 120) {
+                plane.price = plane.minimalPrice;
+            } else {
+                plane.price = Math.floor(duration * minutePrice);
+            }
+        }
+      }
+
+      const renderResult = function() {
+        let block = $('#rec275708618');
+        let routeInfo = $('[data-info="route"]');
+        let dateInfo = $('[data-info="date"]');
+        let dateInput = $('[name="date"]');
+        let resultList = $('.result__list');
+
+        routeInfo.text(`${departureInput.value} - ${arrivalInput.value}`);
+        if (dateInput.val() == '') {
+            dateInfo.parent().hide();
+        } else {
+            dateInfo.parent().show();
+            dateInfo.text(dateInput.val());
+        }
+
+        if ($('.result__item').length > 0) {
+          $('.result__item').each(function() {
+            $(this).remove();
+          });
+        }
+
+        for (let plane of planes) {
+          let resultItem = `<li class="result__item">
+					<div class="result__item-left">
+						<p class="result__item-title">${plane.name}</p>
+						<p class="result__item-time">Время в пути: <span data-item="time">${plane.duration}</span></p>
+						<p class="result__item-passengers">Пассажиров: <span data-item="passengers">${plane.passengers}</span></p>
+					</div>
+					<div class="result__item-image">
+						<div class="result__item-image-wrapper">
+							<img src="${plane.img}" alt="Plane image" />
+						</div>
+					</div>
+					<div class="result__item-data-mob">
+					    <p class="result__item-time">Время в пути: <span data-item="time">${plane.duration}</span></p>
+						<p class="result__item-passengers">Пассажиров: <span data-item="passengers">${plane.passengers}</span></p>
+					</div>
+					<div class="result__item-right">
+						<p class="result__item-price"><span data-item="price">${plane.price}</span> евро</p>
+						<a class="result__item-btn">Заказать</a>
+					</div>
+				</li>`;
+          resultList.append(resultItem);
+        }
+        
+        block.show();
+      }
+
+      const checkError = function(input) {
+        if (input.val() == '') {
+          input.closest('.t-input-block').find('.t-input-error').show();
+          input.closest('.t-input-block').find('.t-input-error').text('Значение не должно быть пустым');
+          setTimeout(function() {
+            input.closest('.t-input-block').find('.t-input-error').hide();
+          }, 1000);
+          hasError = true;
+        } else {
+          hasError = false;
+        }
+      }
+
+      locationAutocompleter();
+
+      $('[href="#route"]').on('click', function() {
+        checkError($('.custom-form [name="from"]'));
+        checkError($('.custom-form [name="to"]'));
+        if (!hasError) {
+          getLocationByInput(departureInput.value, arrivalInput.value);
+          setTimeout(function() {
+            $('html, body').animate({
+              scrollTop: $('#rec275708618').offset().top
+            }, 2000);
+          }, 1200)
+        }
+      });
+      
+      $('.custom-form [name="date"]').attr('autocomplete', 'off');
+    }, 1100);
+  });
+
+</script>
+<!-- Main calculating script -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBvP9E7l3vLngGzMmnYSdTyP5jmb0S9kGY&libraries=places,geometry&language=ru-RU"></script>
+
+<style>
+  [data-tooltip-hook="#departure-popup"] .t-popup__container,
+  [data-tooltip-hook="#arrival-popup"] .t-popup__container {
+    border-radius: 10px;
+  }
+
+  .popup-map-container {
+    padding: 30px 15px;
+  }
+
+  .js-departure-map-input,
+  .js-arrival-map-input {
+    width: 200px;
+    color: #011d40;
+    border: 1px solid #011d40;
+    background-color: #fff;
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    height: 35px;
+    margin-bottom: 30px;
+    font-family: 'Raleway', Arial, sans-serif;
+    padding: 0 20px;
+    line-height: 1.33;
+  }
+
+  .js-departure-map-input:focus,
+  .js-arrival-map-input:focus {
+    -webkit-appearance: none;
+    appearance: none;
+    outline: 0;
+  }
+  
+  .js-departure-map-input {
+        padding-left: 40px;
+        background-image: url('https://static.tildacdn.com/tild3837-3162-4431-a463-386165396339/Airplane_up.svg');
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        background-size: 20px;
+    }
+
+    .js-arrival-map-input {
+        padding-left: 40px;
+        background-image: url('https://static.tildacdn.com/tild6337-3332-4132-b234-643337366465/Airplane_down.svg');
+        background-repeat: no-repeat;
+        background-position: 10px center;
+        background-size: 20px;
+    }
+
+  #map_one,
+  #map_two {
+    height: 500px;
+    border-radius: 10px;
+  }
+  
+  @media (max-width: 640px) {
+      #map_one,
+      #map_two {
+        height: 300px;
+      } 
+  }
+
+  .gmnoprint {
+    display: none;
+  }
+
+  div.pac-container {
+    z-index: 99999999999 !important;
+  }
+
+</style>
+
+<script>
+  $(document).ready(function() {
+    setTimeout(function() {
+      let distance;
+      let hasError;
+      let departureInput = document.querySelector('.custom-form [name="from"]');
+      let arrivalInput = document.querySelector('.custom-form [name="to"]');
+      let planes = [{
+          img: 'https://static.tildacdn.com/tild3131-3732-4230-b662-393338346536/SR22_1.jpg',
+          name: 'Cirrus S22',
+          passengers: 3,
+          speed: 300,
+          hourPrice: 600,
+          minimalPrice: 1200
+        },
+        {
+          img: 'https://static.tildacdn.com/tild6562-3132-4361-a135-623164626462/Vision_Jet_-1.jpg',
+          name: 'Cirrus Vision Jet',
+          passengers: 5,
+          speed: 500,
+          hourPrice: 2500,
+          minimalPrice: 5000
+        }
+      ];
+
+      const locationAutocompleter = function() {
+        let southWest = new google.maps.LatLng(35.809034, -26.020242);
+        let northEast = new google.maps.LatLng(74.413305, 35.325716);
+        let customBounds = new google.maps.LatLngBounds(southWest, northEast);
+        let optionsAirport = {
+            bounds: customBounds,
+            strictBounds: true,
+           types: ['(cities)']
+        };
+
+        new google.maps.places.Autocomplete(departureInput, optionsAirport);
+        new google.maps.places.Autocomplete(arrivalInput, optionsAirport);
+      }
+
+      const getLocationByInput = function(departureValue, arrivalValue) {
+
+        let geocoder = new google.maps.Geocoder();
+        let geocoder2 = new google.maps.Geocoder();
+        let lat1, long1, lat2, long2;
+
+        if (departureInput.value !== '' && arrivalInput.value !== '') {
+          geocoder.geocode({
+            'address': departureValue
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              let latitude = results[0].geometry.location.lat();
+              let longitude = results[0].geometry.location.lng();
+              lat1 = latitude;
+              long1 = longitude;
+            }
+          });
+
+          geocoder2.geocode({
+            'address': arrivalValue
+          }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+              let latitude = results[0].geometry.location.lat();
+              let longitude = results[0].geometry.location.lng();
+              lat2 = latitude;
+              long2 = longitude;
+            }
+          });
+
+          setTimeout(function() {
+            getDirection(lat1, long1, lat2, long2, calculatePrice);
+            renderResult();
+          }, 1200);
+
+        }
+      }
+
+      const getDirection = function(lat1, long1, lat2, long2, callback) {
+        let originValue = new google.maps.LatLng(lat1, long1);
+        let destinationValue = new google.maps.LatLng(lat2, long2);
+        distance = google.maps.geometry.spherical.computeDistanceBetween(originValue, destinationValue);
+        distance = distance / 1000;
+
+        if (callback) {
+          callback();
+        }
+      }
+
+      const calculatePrice = function() {
+        for (let plane of planes) {
+            let duration = Math.floor(distance / plane.speed * 60);
+            let minutePrice = plane.hourPrice / 60;
+            console.log(duration)
+            let hours = duration / 60;
+            let formattedHours = Math.floor(hours);
+            let minutes = (hours - formattedHours) * 60;
+            let formattedMinutes = Math.floor(minutes);
+            plane.duration = ('0' + formattedHours).slice(-2) + ':' + ('0' + formattedMinutes).slice(-2);
+            if (duration <= 120) {
+                plane.price = plane.minimalPrice;
+            } else {
+                plane.price = Math.floor(duration * minutePrice);
+            }
+        }
+      }
+
+      const renderResult = function() {
+        let block = $('#rec275708618');
+        let routeInfo = $('[data-info="route"]');
+        let dateInfo = $('[data-info="date"]');
+        let dateInput = $('[name="date"]');
+        let resultList = $('.result__list');
+
+        routeInfo.text(`${departureInput.value} - ${arrivalInput.value}`);
+        if (dateInput.val() == '') {
+            dateInfo.parent().hide();
+        } else {
+            dateInfo.parent().show();
+            dateInfo.text(dateInput.val());
+        }
+
+        if ($('.result__item').length > 0) {
+          $('.result__item').each(function() {
+            $(this).remove();
+          });
+        }
+
+        for (let plane of planes) {
+          let resultItem = `<li class="result__item">
+					<div class="result__item-left">
+						<p class="result__item-title">${plane.name}</p>
+						<p class="result__item-time">Время в пути: <span data-item="time">${plane.duration}</span></p>
+						<p class="result__item-passengers">Пассажиров: <span data-item="passengers">${plane.passengers}</span></p>
+					</div>
+					<div class="result__item-image">
+						<div class="result__item-image-wrapper">
+							<img src="${plane.img}" alt="Plane image" />
+						</div>
+					</div>
+					<div class="result__item-data-mob">
+					    <p class="result__item-time">Время в пути: <span data-item="time">${plane.duration}</span></p>
+						<p class="result__item-passengers">Пассажиров: <span data-item="passengers">${plane.passengers}</span></p>
+					</div>
+					<div class="result__item-right">
+						<p class="result__item-price"><span data-item="price">${plane.price}</span> евро</p>
+						<a class="result__item-btn">Заказать</a>
+					</div>
+				</li>`;
+          resultList.append(resultItem);
+        }
+        
+        block.show();
+      }
+
+      const checkError = function(input) {
+        if (input.val() == '') {
+          input.closest('.t-input-block').find('.t-input-error').show();
+          input.closest('.t-input-block').find('.t-input-error').text('Значение не должно быть пустым');
+          setTimeout(function() {
+            input.closest('.t-input-block').find('.t-input-error').hide();
+          }, 1000);
+          hasError = true;
+        } else {
+          hasError = false;
+        }
+      }
+
+      locationAutocompleter();
+
+      $('[href="#route"]').on('click', function() {
+        checkError($('.custom-form [name="from"]'));
+        checkError($('.custom-form [name="to"]'));
+        if (!hasError) {
+          getLocationByInput(departureInput.value, arrivalInput.value);
+          setTimeout(function() {
+            $('html, body').animate({
+              scrollTop: $('#rec275708618').offset().top
+            }, 2000);
+          }, 1200)
+        }
+      });
+      
+      $('.custom-form [name="date"]').attr('autocomplete', 'off');
+    }, 1100);
+  });
+
+</script>
+
+
+<!-- Add plane flight as product -->
+<script>
+    $(document).on('click', '.result__item-btn', function() {
+      let name = $(this).closest('.result__item').find('.result__item-title').text();
+      let date = $('[data-info="date"]').text();
+      let route = $('[data-info="route"]').text();
+      let time = $(this).closest('.result__item').find('.result__item-time span').eq(0).text();
+      let passengers = $(this).closest('.result__item').find('.result__item-passengers span').eq(0).text();
+      let image = $(this).closest('.result__item').find('.result__item-image img').attr('src');
+      let price = $(this).closest('.result__item').find('.result__item-price span').text();
+      let dateOption = $('[data-info="date"]').text() == '' ? 'Не выбрана' : $('[data-info="date"]').text();
+  
+      let product = {
+        amount: Number(price),
+        lid: 0,
+        img: image,
+        name: name,
+        options: [{
+            option: 'Маршрут',
+            variant: route,
+            price: 0
+          }, {
+            option: 'Дата',
+            variant: dateOption,
+            price: 0
+          }, {
+            option: 'Время в пути',
+            variant: time,
+            price: 0
+          },
+          {
+            option: 'Пассажиров',
+            variant: passengers,
+            price: 0,
+          }
+        ],
+        price: Number(price),
+        uid: 0
+      }
+  
+      tcart__addProduct(product);
+    });
+  
+  </script>
+  
+
+  <div class="result">
+    <div class="result__data">
+      <p class="result__data-title">Маршрут: <span class="result__data-info" data-info="route"></span></p>
+      <p class="result__data-title result__data-title--small">Дата: <span class="result__data-info" data-info="date"></span></p>
+    </div>
+    <p class="result__data-text">Расчет приблизительный, для получения точного рассчета выберите самолет и нажмите "Заказать".</p>
+    <p class="result__data-text result__data-text--medium">При заказе с датой вылета больше чем 90 дней скидка 20% на полную стоимость полета..</p>
+    <p class="result__data-text result__data-text--medium">При заказе обратного полета скажите это менеджеру и получите скидку 65%</p>
+  
+    <ul class="result__list"></ul>
+  </div>
+  
+  <style>
+    #rec275708618 {
+      display: none;
+    }
+  
+    @media (max-width: 640px) {
+      .result {
+        max-width: 460px;
+        margin: 0 auto;
+      }
+    }
+  
+    @media (max-width: 480px) {
+      .result {
+        max-width: 320px;
+        margin: 0 auto;
+      }
+    }
+  
+    .result__data {
+      display: flex;
+      align-items: center;
+      margin-bottom: 35px;
+    }
+  
+    @media (max-width: 1024px) {
+      .result__data {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  
+    @media (max-width: 640px) {
+      .result__data {
+        margin-bottom: 15px;
+      }
+    }
+  
+    .result__data-title {
+      max-width: 50%;
+      font-size: 26px;
+      font-weight: 300;
+      font-family: 'EXO 2', Arial, sans-serif;
+      color: #011d40;
+    }
+  
+    @media (max-width: 1024px) {
+      .result__data-title {
+        max-width: 100%;
+        margin-bottom: 10px;
+      }
+    }
+  
+    @media (max-width: 640px) {
+      .result__data-title {
+        margin-bottom: 20px;
+        font-size: 22px;
+      }
+    }
+  
+    .result__data-title--small {
+      font-size: 22px;
+    }
+  
+    @media (max-width: 960px) {
+  
+      .result__data-title--small {
+        font-size: 20px;
+      }
+    }
+  
+    @media (max-width: 640px) {
+      .result__data-title--small {
+        font-size: 16px;
+      }
+    }
+  
+    .result__data-title:first-child {
+      margin-right: 60px;
+    }
+  
+    @media (max-width: 1024px) {
+      .result__data-title:first-child {
+        margin-right: 0;
+      }
+  
+    }
+  
+    .result__data-info {
+      font-weight: 600;
+    }
+  
+    .result__data-text {
+      margin-bottom: 18px;
+      font-size: 16px;
+      font-weight: 300;
+      font-family: 'EXO 2', Arial, sans-serif;
+      color: #011d40;
+    }
+  
+    @media (max-width: 960px) {
+      .result__data-text {
+        font-size: 14px;
+      }
+    }
+  
+  
+    @media (max-width: 640px) {
+      .result__data-text {
+        margin-bottom: 15px;
+        font-size: 12px;
+      }
+    }
+  
+    .result__data-text--medium {
+      font-weight: 600;
+    }
+  
+    .result__list {
+      display: flex;
+      align-items: center;
+      padding: 0 !important;
+      margin-top: 30px !important;
+      margin: 20px -20px !important;
+      list-style-type: none;
+    }
+  
+    @media (max-width: 1200px) {
+      .result__list {
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 30px 0 0 !important;
+      }
+    }
+  
+    @media (max-width: 480px) {
+      .result__list {
+        align-items: center;
+      }
+    }
+  
+  
+    .result__item {
+      width: calc(50% - 40px);
+      display: flex;
+      align-items: flex-start;
+      margin: 0 20px;
+      padding: 20px 20px 20px 25px;
+      border-radius: 30px;
+      border: 1px solid #011d40;
+    }
+  
+    @media (max-width: 1200px) {
+      .result__item {
+        width: auto;
+        margin: 0 0 15px;
+      }
+    }
+  
+    @media (max-width: 640px) {
+      .result__item {
+        width: 100%;
+        padding: 20px 10px 20px 15px;
+      }
+    }
+  
+    @media (max-width: 480px) {
+      .result__item {
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 15px;
+      }
+    }
+  
+    .result__item-data-mob {
+      display: none;
+    }
+  
+    @media (max-width: 480px) {
+      .result__item-data-mob {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        margin-bottom: 5px;
+        padding: 0 10px;
+      }
+  
+      .result__item-data-mob .result__item-time,
+      .result__item-data-mob .result__item-passengers {
+        display: block;
+      }
+    }
+  
+  
+    .result__item-left,
+    .result__item-right {
+      flex-shrink: 0;
+    }
+  
+    @media (max-width: 480px) {
+      .result__item-left {
+        width: 100%;
+        margin: 0;
+        text-align: center;
+      }
+    }
+  
+    @media (max-width: 640px) {
+      .result__item-left {
+        margin-right: auto;
+      }
+    }
+  
+    .result__item-right {
+      display: flex;
+      align-self: stretch;
+      align-items: center;
+      flex-direction: column;
+    }
+  
+    .result__item-title {
+      margin-bottom: 10px;
+      color: #011d40;
+      font-size: 22px;
+      font-family: 'EXO 2', Arial, sans-serif;
+      font-weight: 600;
+    }
+  
+    .result__item-time,
+    .result__item-passengers {
+      margin-bottom: 10px;
+      color: #011d40;
+      font-size: 18px;
+      font-family: 'EXO 2', Arial, sans-serif;
+      font-weight: 300;
+    }
+  
+  
+    @media (max-width: 640px) {
+      .result__item-title {
+        margin-bottom: 15px;
+        font-size: 20px;
+      }
+  
+      .result__item-time,
+      .result__item-passengers {
+        font-size: 14px;
+      }
+    }
+  
+    @media (max-width: 480px) {
+  
+      .result__item-time,
+      .result__item-passengers {
+        display: none;
+      }
+    }
+  
+    .result__item-time span,
+    .result__item-passengers span {
+      font-weight: 600;
+    }
+  
+    @media (max-width: 480px) {
+      .result__item-image {
+        width: 100%;
+        margin-bottom: 25px;
+      }
+    }
+  
+    .result__item-image-wrapper {
+      position: relative;
+      width: 150px;
+      height: 95px;
+      margin: 0 30px;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+  
+    @media (max-width: 640px) {
+      .result__item-image-wrapper {
+        width: 110px;
+        height: 80px;
+        margin: 0 15px;
+      }
+    }
+  
+    @media (max-width: 480px) {
+      .result__item-image-wrapper {
+        width: 100%;
+        margin: 0;
+      }
+    }
+  
+    .result__item-image-wrapper img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      background-position: center;
+    }
+  
+    @media (max-width: 480px) {
+      .result__item-image-wrapper img {
+        object-fit: cover;
+      }
+    }
+  
+    .result__item-btn {
+      margin-top: auto;
+      padding: 14px 15px;
+      color: #ffffff !important;
+      font-size: 18px;
+      font-family: 'EXO 2', Arial, sans-serif;
+      line-height: 1;
+      font-weight: 400;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1px solid #011d40;
+      border-radius: 30px;
+      background-color: #011d40;
+      background-position: center center;
+      transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+      cursor: pointer;
+    }
+  
+    @media (max-width: 480px) {
+      .result__item-btn {
+        padding: 14px 25px;
+        font-size: 16px;
+      }
+    }
+  
+    .result__item-btn:hover {
+      color: #011d40 !important;
+      background-color: #fff;
+    }
+  
+    .result__item-price {
+      color: #011d40;
+      font-size: 26px;
+      font-family: 'EXO 2', Arial, sans-serif;
+      font-weight: 600;
+    }
+  
+    @media (max-width: 480px) {
+      .result__item-price {
+        margin-bottom: 20px;
+      }
+    }
+  
+  </style>
+  
