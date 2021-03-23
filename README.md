@@ -12,7 +12,7 @@ There can be any conditions, like single product amount, multiple product amount
 
 This kind of script works 100%, since it takes the real Tilda promocode logic.  
 
-[Link to page](https://javascriptislife.tilda.ws/discount-script)  
+[Link to page](https://michailozdemir.dev/discount-script)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-discount.js)
 
 
@@ -22,32 +22,38 @@ Basically parse the needed bank JSON file and apply everything to Tilda products
 
 A pretty complicated way of applying was used. Such things as setTimout should be avoided, but since we're implementing it to a platform which has custom functions and their applying time, I had to do this kind of a dirty hack.  
 
-[Link to page](https://javascriptislife.tilda.ws/currency-convert)  
+[Link to page](https://michailozdemir.dev/currency-convert)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-currency-converter.js)
 
 
 ## Taxi form script
 The task was create a form for taxi service. It takes user real location (in case it's allowed). Passes it to certain inputs and calculates the price for a ride based on pre-defined values in JavaScript object. Once location can't be found, you can choose the city from the dropdown and after that pass the exact address to next input (exact address was needed just for the service, didn't take it's part in a calculation). There are also some kind of field validators (button for ordering is not allowed to click before all fields are filled). Used a dirty mix of JavaScript with jQuery actually.  
 
-[Link to page](https://javascriptislife.tilda.ws/taxi-form)  
+[Link to page](https://michailozdemir.dev/taxi-form)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-taxi-form.js)  
 
 
 ## Tilda Tinder (so called)
 This kind of customization represent Tinder look to default product cards on Tilda Publishing platform. The user can like and dislike cards with products (basically travel destinations). Liked cards go to cart, disliked cards just fading out and stay in hidden state. Both cards are stored in Local Storage and once you click 'Сбросить все' it resets the cards back to where they were, clears storage and cart. Also had to customize buttons for product item (make them look similar to like & dislike buttons).
 
-[Link to page](https://javascriptislife.tilda.ws/tilda-tinder)  
+[Link to page](https://michailozdemir.dev/tilda-tinder)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-tinder.js)
 
 ## Pythagoras square (calculator)
 Created a calculator called Pythagoras square, which is used for numerology. It takes digits of your birth date and takes it in different combinations. After that gives you some result with numbers, which you can read about after and know what kind of person are you (whew).
 
-[Link to page](https://javascriptislife.tilda.ws/pythagoras-square)  
+[Link to page](https://michailozdemir.dev/pythagoras-square)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-pythagoras-square.js)
 
 ## Google Reviews (fetching and pasting into Tilda website)
 Created a markup, styles and JS logic to fetch data from Google Maps API and get company reviews 
 
-[Link to page](https://javascriptislife.tilda.ws/google-reviews)  
+[Link to page](https://michailozdemir.dev/google-reviews)  
 [Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-google-reviews.html)
+
+## Flight Calculator
+Created a flight price calculator, which shows the length of the flight, it's time for certain planes depending on their speed.
+
+[Link to page](https://jet44.com)  
+[Link to script file](https://github.com/michailozdemir/tilda-scripts/blob/master/tilda-flight-calculator.html)
 
