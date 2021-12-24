@@ -1,3 +1,4 @@
+(function() {
   let modal = document.querySelector('#colibri-modal');
   let modalFrame = document.querySelector('#colibri-modal-frame');
   let frameUrl = [];
@@ -24,3 +25,4 @@
   });
 
   buildFrameUrl();
+})();
