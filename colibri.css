@@ -1,0 +1,39 @@
+#colibri-modal {
+  display: none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+#colibri-modal.show {
+  display: block;
+}
+
+.colibri-modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .colibri-modal-content {
+    max-width: 90%;
+    top: 40px;
+    transform: translateX(-50%);
+  }
+}
+
+.colibri-modal-content iframe {
+  width: 100%;
+  min-height: 660px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+}
